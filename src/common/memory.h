@@ -16,32 +16,25 @@ static inline size_t grow_capacity(size_t old_capacity) {
 }
 
 /**
- * Gets the bytes from a size_t integer
+ * Creates a size_t from three bytes
+ * @param one The first byte
+ * @param two The second byte
+ * @param three The third byte
+ * @return The bytes as a normal number
  */
-typedef union size_t_bytes {
-    /** The actual number in its 4 byte form */
-    size_t number;
-
-    /** The bytes */
-    struct {
-        uint8_t one;
-        uint8_t two;
-        uint8_t three;
-        uint8_t four;
-    } raw;
-} size_t_bytes;
+static inline size_t from_bytes(uint8_t one, uint8_t two, uint8_t three) {
+    return one + (two << 8u) + (three << 16u);
+}
 
 /**
- * Gets the bytes from a size_t
- * @param number The number to get the bytes of
- * @return The bytes of the number
+ * Gets three bytes from a size_t
+ * @param bytes A pre-allocated buffer with space for at least 3 bytes
+ * @param n The number to turn into bytes
  */
-static inline size_t_bytes get_bytes(size_t number) {
-    size_t_bytes bytes;
-
-    bytes.number = number;
-
-    return bytes;
+static inline void get_bytes(uint8_t *bytes, size_t n) {
+    bytes[0] = n & 0xFFu;
+    bytes[1] = (n & 0xFF00u) >> 8u;
+    bytes[2] = (n & 0xFF0000u) >> 16u;
 }
 
 /**

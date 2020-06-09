@@ -2,6 +2,7 @@
 
 #include "../common/common.h"
 #include "value.h"
+#include <assert.h>
 
 /**
  * @brief Represents an chunk's "operation code"
@@ -11,7 +12,10 @@ typedef enum op_code {
     OP_RETURN,
     OP_LOAD_CONST,
     OP_LOAD_CONST_LONG,
-} op_code;
+} __attribute__((__packed__)) op_code;
+
+_Static_assert(sizeof(op_code) == sizeof(uint8_t),
+               "op_code should be same size as byte");
 
 /**
  * @brief Represents a single VM chunk

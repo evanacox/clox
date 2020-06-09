@@ -62,12 +62,13 @@ void write_constant(chunk *c, value constant, size_t line) {
         write_byte(c, OP_LOAD_CONST, line);
         write_byte(c, offset, line);
     } else {
-        size_t_bytes bytes = get_bytes(offset);
+        uint8_t bytes[3];
+        get_bytes(bytes, offset);
 
         write_byte(c, OP_LOAD_CONST_LONG, line);
-        write_byte(c, bytes.raw.one, line);
-        write_byte(c, bytes.raw.two, line);
-        write_byte(c, bytes.raw.three, line);
+        write_byte(c, bytes[0], line);
+        write_byte(c, bytes[1], line);
+        write_byte(c, bytes[2], line);
     }
 }
 

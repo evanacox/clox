@@ -32,13 +32,11 @@ static inline int const_instruction(const char *name, chunk *c, int offset) {
 static inline int const_long_instruction(const char *n, chunk *c, int offset) {
     // get the bytes of the 3 byte const_pool offset, turn into a size_t
     // to use as the index
-    size_t_bytes offset_n;
-    offset_n.raw.one = c->code[offset + 1];
-    offset_n.raw.two = c->code[offset + 2];
-    offset_n.raw.three = c->code[offset + 3];
+    size_t num = from_bytes(
+        c->code[offset + 1], c->code[offset + 2], c->code[offset + 3]);
 
-    printf("%-20s %4s %d ", n, "idx:", c->code[offset_n.number]);
-    print_value(c->constant_pool.values[c->code[offset_n.number]]);
+    printf("%-20s %4s %zu ", n, "idx:", num);
+    print_value(c->constant_pool.values[num]);
 
     return offset + 4;
 }
