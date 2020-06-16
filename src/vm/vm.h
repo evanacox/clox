@@ -2,6 +2,8 @@
 
 #include "chunk.h"
 
+#define MAX_STACK_SIZE 256
+
 /**
  * Represents the virtual machine
  */
@@ -11,6 +13,11 @@ typedef struct vm {
 
     /** The program counter */
     uint8_t *pc;
+
+    /** The "stack" for the VM */
+    value stack[MAX_STACK_SIZE];
+
+    value *stack_top;
 } vm;
 
 /**
@@ -37,4 +44,16 @@ void free_vm();
  * @param chunk The chunk to interpret
  * @return The result of the interpretation
  */
-interpret_result interpret(chunk *chunk);
+interpret_result interpret(const char *source);
+
+/**
+ * Pushes a value onto the VM's stack
+ * @param val The value to push
+ */
+void push(value val);
+
+/**
+ * Pops a value from the VM's stack
+ * @return The value at the top of the stack
+ */
+value pop();

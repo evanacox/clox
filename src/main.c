@@ -1,34 +1,72 @@
 #include "common/common.h"
-#include "common/memory.h"
-#include "util/disassembler.h"
-#include "vm/chunk.h"
 #include "vm/vm.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+static void repl() {
+    char line_buf[1024];
+
+    while (true) {
+        printf("clox >> ");
+
+        if (!fgets(line_buf, sizeof(line_buf), stdin)) {
+            printf("\n");
+            break;
+        }
+
+        interpret(line_buf);
+    }
+}
+
+static char *read_file(const char *path) {
+    FILE *file = fopen(path, "r");
+    if (file == NULL) {
+        fprintf(stderr, "Unable to open file '%s'.\n", path);
+        exit(1);
+    }
+
+    fseek(file, 0, SEEK_END);
+    size_t len = ftell(file);
+
+    char *buffer = malloc(len + 1);
+    if (buffer == NULL) {
+        fprintf(stderr, "Not enough memory to read file '%s'.\n", path);
+    }
+
+    rewind(file);
+
+    size_t len_read = fread(buffer, sizeof(char), len, file);
+    if (len_read < len) {
+        fprintf(stderr, "Unable to read file '%s'.", path);
+    }
+    fclose(file);
+
+    buffer[len_read] = '\0';
+    return buffer;
+}
+
+static void run_file(const char *path) {
+    char *buffer = read_file(path);
+    interpret_result res = interpret(buffer);
+    free(buffer);
+
+    if (res == INTERPRET_COMPILE_ERROR)
+        exit(65);
+    else if (res == INTERPRET_RUNTIME_ERROR)
+        exit(70);
+}
 
 int main(int argc, const char **argv) {
     init_vm();
 
-    chunk chunk;
-
-    init_chunk(&chunk);
-    size_t idx = add_constant(&chunk, 6.9);
-
-    // write_byte(&chunk, OP_RETURN, 1);
-    write_byte(&chunk, OP_LOAD_CONST, 2);
-    write_byte(&chunk, idx, 2);
-
-    size_t other_idx = add_constant(&chunk, 5.42);
-    write_byte(&chunk, OP_LOAD_CONST_LONG, 3);
-    uint8_t bytes[3];
-    get_bytes(bytes, other_idx);
-    write_byte(&chunk, bytes[0], 3);
-    write_byte(&chunk, bytes[1], 3);
-    write_byte(&chunk, bytes[2], 3);
-    // write_constant(&chunk, 5.5, 3);
-
-    disassemble_chunk(&chunk, "example chunk");
-    interpret(&chunk);
-
-    free_chunk(&chunk);
+    if (argc == 1) {
+        repl();
+    } else if (argc == 2) {
+        run_file(argv[1]);
+    } else {
+        fprintf(stderr, "Path not specified! Usage: clox [path]");
+    }
 
     free_vm();
 

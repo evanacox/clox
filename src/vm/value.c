@@ -17,8 +17,7 @@ void init_value_array_with_capacity(value_array *val_array, size_t capacity) {
 void write_value_array(value_array *val_array, value val) {
     if (val_array->size + 1 > val_array->capacity) {
         int new_capacity = grow_capacity(val_array->capacity);
-        val_array->values = GROW_ARRAY(
-            val_array->values, value, val_array->capacity, new_capacity);
+        val_array->values = GROW_ARRAY(val_array->values, value, val_array->capacity, new_capacity);
         val_array->capacity = new_capacity;
     }
 
@@ -30,4 +29,10 @@ void free_value_array(value_array *val_array) {
     init_value_array(val_array);
 }
 
-void print_value(value val) { printf("(Value: %g)\n", val); }
+void print_value(value val) {
+    switch (val.type) {
+        case VAL_NUMBER: printf("%g", as_number(val)); break;
+        case VAL_BOOL: printf(as_bool(val) ? "true" : "false"); break;
+        case VAL_NIL: printf("nil"); break;
+    }
+}

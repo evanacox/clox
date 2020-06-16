@@ -26,17 +26,19 @@ static inline int simple_instruction(const char *name, int offset) {
 static inline int const_instruction(const char *name, chunk *c, int offset) {
     printf("%-20s %4s %d ", name, "idx:", c->code[offset + 1]);
     print_value(c->constant_pool.values[c->code[offset + 1]]);
+    printf("\n");
+
     return offset + 2;
 }
 
 static inline int const_long_instruction(const char *n, chunk *c, int offset) {
     // get the bytes of the 3 byte const_pool offset, turn into a size_t
     // to use as the index
-    size_t num = from_bytes(
-        c->code[offset + 1], c->code[offset + 2], c->code[offset + 3]);
+    size_t num = from_bytes(c->code[offset + 1], c->code[offset + 2], c->code[offset + 3]);
 
-    printf("%-20s %4s %zu ", n, "idx:", num);
+    printf("%-20s %4s %zu", n, "idx:", num);
     print_value(c->constant_pool.values[num]);
+    printf("\n");
 
     return offset + 4;
 }
@@ -63,14 +65,21 @@ int disassemble_instruction(chunk *c, int offset) {
     }
 
     switch (c->code[offset]) {
-        case OP_RETURN:
-            return simple_instruction("OP_RETURN", offset);
-        case OP_LOAD_CONST:
-            return const_instruction("OP_LOAD_CONST", c, offset);
-        case OP_LOAD_CONST_LONG:
-            return const_long_instruction("OP_LOAD_CONST_LONG", c, offset);
-        default:
-            printf("Unknown opcode: %d\n", c->code[offset]);
-            return offset + 1;
+        case OP_RETURN: return simple_instruction("OP_RETURN", offset);
+        case OP_LOAD_CONST: return const_instruction("OP_LOAD_CONST", c, offset);
+        case OP_LOAD_CONST_LONG: return const_long_instruction("OP_LOAD_CONST_LONG", c, offset);
+        case OP_NEGATE: return simple_instruction("OP_NEGATE", offset);
+        case OP_ADD: return simple_instruction("OP_ADD", offset);
+        // case OP_SUBTRACT: return simple_instruction("OP_SUBTRACT", offset);
+        case OP_MULTIPLY: return simple_instruction("OP_MULTIPLY", offset);
+        case OP_DIVIDE: return simple_instruction("OP_DIVIDE", offset);
+        case OP_NIL: return simple_instruction("OP_NIL", offset);
+        case OP_TRUE: return simple_instruction("OP_TRUE", offset);
+        case OP_FALSE: return simple_instruction("OP_FALSE", offset);
+        case OP_NOT: return simple_instruction("OP_NOT", offset);
+        case OP_EQUAL: return simple_instruction("OP_EQUAL", offset);
+        case OP_GREATER: return simple_instruction("OP_GREATER", offset);
+        case OP_LESS: return simple_instruction("OP_LESS", offset);
+        default: printf("Unknown opcode: %d\n", c->code[offset]); return offset + 1;
     }
 }

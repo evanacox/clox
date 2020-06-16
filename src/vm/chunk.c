@@ -58,7 +58,7 @@ void write_byte(chunk *c, uint8_t byte, size_t line) {
 void write_constant(chunk *c, value constant, size_t line) {
     size_t offset = add_constant(c, constant);
 
-    if (offset < 256) {
+    if (offset <= UINT8_MAX) {
         write_byte(c, OP_LOAD_CONST, line);
         write_byte(c, offset, line);
     } else {

@@ -12,10 +12,21 @@ typedef enum op_code {
     OP_RETURN,
     OP_LOAD_CONST,
     OP_LOAD_CONST_LONG,
+    OP_NIL,
+    OP_TRUE,
+    OP_FALSE,
+    OP_NOT,
+    OP_EQUAL,
+    OP_GREATER,
+    OP_LESS,
+    OP_NEGATE,
+    OP_ADD,
+    OP_SUBTRACT,
+    OP_MULTIPLY,
+    OP_DIVIDE,
 } __attribute__((__packed__)) op_code;
 
-_Static_assert(sizeof(op_code) == sizeof(uint8_t),
-               "op_code should be same size as byte");
+_Static_assert(sizeof(op_code) == sizeof(uint8_t), "op_code should be same size as byte");
 
 /**
  * @brief Represents a single VM chunk
