@@ -3,7 +3,12 @@
 #include "value.h"
 
 static inline void write_line(chunk *c, size_t line) {
-    if (c->lines && c->lines[c->lines_size - 1] == line) {
+    // clang-format off
+    if (
+        c->lines_size != 0 &&
+        c->lines[c->lines_size - 1] == line)
+    // clang-format on
+    {
         c->lines[c->lines_size - 2] += 1;
         return;
     }

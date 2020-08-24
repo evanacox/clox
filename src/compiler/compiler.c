@@ -1,5 +1,6 @@
 #include "compiler.h"
 #include "../common/memory.h"
+#include "../vm/object.h"
 #include "scanner.h"
 #include <stdarg.h>
 #include <stdio.h>
@@ -54,6 +55,7 @@ static void unary();
 static void grouping();
 static void number();
 static void literal();
+static void string_literal();
 
 parse_rule rules[] = {
     {grouping, NULL, PREC_NONE},     // TOKEN_LEFT_PAREN
@@ -76,7 +78,7 @@ parse_rule rules[] = {
     {NULL, binary, PREC_COMPARISON}, // TOKEN_LESS
     {NULL, binary, PREC_COMPARISON}, // TOKEN_LESS_EQUAL
     {NULL, NULL, PREC_NONE},         // TOKEN_IDENTIFIER
-    {NULL, NULL, PREC_NONE},         // TOKEN_STRING
+    {string_literal, NULL, PREC_NONE},       // TOKEN_STRING
     {number, NULL, PREC_NONE},       // TOKEN_NUMBER
     {NULL, NULL, PREC_NONE},         // TOKEN_AND
     {NULL, NULL, PREC_NONE},         // TOKEN_CLASS
@@ -207,6 +209,10 @@ static void consume(token_type type, const char *err) {
     return advance();
 }
 
+/**
+ * Parses for an expression with precedence higher than `p`
+ * @param p The precedence level to parse at
+ */
 static void parse_with_precedence(precedence p) {
     advance();
 
@@ -241,6 +247,19 @@ static void number() {
     emit_constant(number_value(val));
 }
 
+/**
+ * Consumes a string literal
+ */
+static void string_literal() {
+    // copy the string, excluding the quotes
+    string *str = copy_string(s_parser.previous.tok_start + 1, s_parser.previous.len - 2);
+
+    emit_constant(object_value(str));
+}
+
+/**
+ * Consumes a boolean / nil literal
+ */
 static void literal() {
     switch (s_parser.previous.type) {
         case TOKEN_NIL: emit_byte(OP_NIL); break;

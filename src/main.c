@@ -15,6 +15,8 @@ static void repl() {
             break;
         }
 
+        if (line_buf[0] == 'c' && line_buf[1] == 'l') { exit(0); }
+
         interpret(line_buf);
     }
 }
@@ -30,16 +32,12 @@ static char *read_file(const char *path) {
     size_t len = ftell(file);
 
     char *buffer = malloc(len + 1);
-    if (buffer == NULL) {
-        fprintf(stderr, "Not enough memory to read file '%s'.\n", path);
-    }
+    if (buffer == NULL) { fprintf(stderr, "Not enough memory to read file '%s'.\n", path); }
 
     rewind(file);
 
     size_t len_read = fread(buffer, sizeof(char), len, file);
-    if (len_read < len) {
-        fprintf(stderr, "Unable to read file '%s'.", path);
-    }
+    if (len_read < len) { fprintf(stderr, "Unable to read file '%s'.", path); }
     fclose(file);
 
     buffer[len_read] = '\0';

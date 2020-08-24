@@ -2,13 +2,20 @@
 #include "../common/memory.h"
 #include <stdio.h>
 
+/**
+ * Gets the line that an offset is on
+ * @param lines Pointer to the line array
+ * @param offset The offset to look for
+ * @return The line the offset is on
+ */
 static inline size_t get_line(size_t *lines, int offset) {
     size_t idx = 0;
 
-    // array is lined up as: [ number of bytes with line_n #1, line_n #1 value,
-    // ... ] read each "number of bytes" and subtract offset by it until offset
-    // is smaller, at which point the current "number of bytes" is the offset's
-    // line_n
+    // array is lined up as: [ n of bytes with first line number, first line number, ... ]
+    // Read each "number of bytes" and subtract offset by it (and jump forward) until offset
+    // is smaller, at which point the current "number of bytes" is the offset's line number
+    //
+    // see: https://en.wikipedia.org/wiki/Run-length_encoding
     while (lines[idx] < offset + 1) {
         offset -= lines[idx];
         idx += 2;
@@ -17,12 +24,25 @@ static inline size_t get_line(size_t *lines, int offset) {
     return lines[idx + 1];
 }
 
+/**
+ * Prints a "simple instruction"
+ * @param name The name of the instruction
+ * @param offset The offset the instruction is at
+ * @return The offset for the next instruction
+ */
 static inline int simple_instruction(const char *name, int offset) {
     printf("%-20s\n", name);
 
     return offset + 1;
 }
 
+/**
+ * Prints a LOAD instruction
+ * @param name The name of the instruction
+ * @param c Pointer to the chunk
+ * @param offset The offset of the instruction
+ * @return The offset of the next instruction
+ */
 static inline int const_instruction(const char *name, chunk *c, int offset) {
     printf("%-20s %4s %d ", name, "idx:", c->code[offset + 1]);
     print_value(c->constant_pool.values[c->code[offset + 1]]);
@@ -31,6 +51,13 @@ static inline int const_instruction(const char *name, chunk *c, int offset) {
     return offset + 2;
 }
 
+/**
+ * Prints a LOAD_LONG instruction
+ * @param n The name of the instruction
+ * @param c Pointer to the chunk
+ * @param offset The offset of the instruction
+ * @return The offset of the next instruction
+ */
 static inline int const_long_instruction(const char *n, chunk *c, int offset) {
     // get the bytes of the 3 byte const_pool offset, turn into a size_t
     // to use as the index

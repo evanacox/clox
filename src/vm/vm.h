@@ -1,6 +1,7 @@
 #pragma once
 
 #include "chunk.h"
+#include "object.h"
 
 #define MAX_STACK_SIZE 256
 
@@ -17,8 +18,14 @@ typedef struct vm {
     /** The "stack" for the VM */
     value stack[MAX_STACK_SIZE];
 
+    /** Stack pointer */
     value *stack_top;
+
+    /** Pointer to the linked list of objects */
+    object *objects;
 } vm;
+
+extern vm g_vm;
 
 /**
  * Represents a result of an interpretation

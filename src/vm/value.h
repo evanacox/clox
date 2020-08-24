@@ -1,18 +1,26 @@
 #pragma once
 
 #include "../common/common.h"
-#include "object.h"
+#include <assert.h>
 
 /** The type of a Lox value */
 typedef enum value_type { VAL_BOOL, VAL_NIL, VAL_NUMBER, VAL_OBJ } value_type;
 
+/** Forward declaration for `object` */
+typedef struct object object;
+
+/**
+ * Encapsulates a Lox value
+ */
 typedef struct value {
+    /** Tag for the variant */
     value_type type;
 
+    /** Variant holding the actual Lox val */
     union {
         bool boolean;
         double number;
-        void *obj;
+        object *obj;
     } as;
 } value;
 
@@ -89,6 +97,15 @@ static inline value nil_value() {
 }
 
 /**
+ * Creates an object from a pointer to the object
+ * @param ptr Pointer to the object
+ * @return The value
+ */
+static inline value object_value(object *ptr) {
+    return ((value){VAL_OBJ, {.obj = ptr}});
+}
+
+/**
  * Returns if a value is a bool
  * @param val The value to check
  * @return If the value is of type VAL_BOOL
@@ -116,11 +133,22 @@ static inline bool is_number(value val) {
 }
 
 /**
+ * Returns if a value is an object
+ * @param val The value to check
+ * @return Whether or not the value is of type VAL_OBJ
+ */
+static inline bool is_object(value val) {
+    return val.type == VAL_OBJ;
+}
+
+/**
  * Returns the bool value of a value struct
  * @param val The value struct
  * @return The boolean value
  */
 static inline bool as_bool(value val) {
+    assert(is_bool(val) && "Value being coerced to a bool must be a bool");
+
     return val.as.boolean;
 }
 
@@ -130,7 +158,20 @@ static inline bool as_bool(value val) {
  * @return The double value
  */
 static inline double as_number(value val) {
+    assert(is_number(val) && "Value being coerced to a number must be a number");
+
     return val.as.number;
+}
+
+/**
+ * Returns the object pointer from a value
+ * @param val The value
+ * @return The object pointer
+ */
+static inline object *as_object(value val) {
+    assert(is_object(val) && "Value being coerced to an object must be an object");
+
+    return val.as.obj;
 }
 
 /**
@@ -139,18 +180,4 @@ static inline double as_number(value val) {
  * @param lhs The left hand side of the ==
  * @return Whether the values are equal
  */
-static inline bool are_equal(value lhs, value rhs) {
-    if (lhs.type != rhs.type) {
-        // Lox doesn't implicitly convert types for comparisons
-        return false;
-    }
-
-    // we can't just do a memcmp() or a `rhs.as.number == lhs.as.number`,
-    // because C makes no guarantee about the unused bits being 0 (or anything, for that matter).
-    // so, two equivalent values could return false seemingly randomly
-    switch (lhs.type) {
-        case VAL_BOOL: return as_bool(lhs) == as_bool(rhs);
-        case VAL_NIL: return true;
-        case VAL_NUMBER: return as_number(lhs) == as_number(rhs);
-    }
-}
+bool are_equal(value lhs, value rhs);
